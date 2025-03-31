@@ -1,79 +1,124 @@
 "use client";
-
-import { useState } from "react";
-import axios from "axios";
-import Loader from "../components/Loader";
+import React, { useState, useEffect, useRef } from "react";
+import { FaSpinner, FaSearch } from "react-icons/fa"; // Spinner + Search icon
 import PairCard from "../components/PairCard";
 
-export default function Home() {
-  const [query, setQuery] = useState("");
-  const [pairs, setPairs] = useState<{ image: string; gif: string }[]>([]);
+const Home = () => {
+  const [section, setSection] = useState("");
+  const [images, setImages] = useState<string[]>([]);
+  const [gifs, setGifs] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const observer = useRef<IntersectionObserver | null>(null);
 
-  const fetchPairs = async () => {
-    if (!query) return;
+  const fetchImagesAndGifs = async () => {
+    if (!section.trim()) return;
+
     setLoading(true);
+    setError(null);
 
     try {
-      const res = await axios.get(`/api/fetchPairs?query=${query}`);
-      setPairs((prev) => [...prev, res.data]);
-    } catch (error) {
-      console.error("Error fetching pairs:", error);
+      const [unsplashRes, giphyRes] = await Promise.all([
+        fetch(`https://api.unsplash.com/search/photos?query=${section}&per_page=6&client_id=${process.env.NEXT_PUBLIC_UNSPLASH_ACCESS_KEY}`),
+        fetch(`https://api.giphy.com/v1/gifs/search?api_key=${process.env.NEXT_PUBLIC_GIPHY_API_KEY}&q=${section}&limit=6`)
+      ]);
+
+      if (!unsplashRes.ok || !giphyRes.ok) {
+        throw new Error("Failed to fetch data. Please try again.");
+      }
+
+      const unsplashData = await unsplashRes.json();
+      const giphyData = await giphyRes.json();
+
+      const imageUrls = unsplashData.results.map((img: any) => img.urls.regular);
+      const gifUrls = giphyData.data.map((gif: any) => gif.images.original.url);
+
+      setImages(imageUrls);
+      setGifs(gifUrls);
+    } catch (error: any) {
+      setError(error.message);
     } finally {
       setLoading(false);
     }
   };
 
+  useEffect(() => {
+    const lazyLoad = (entries: IntersectionObserverEntry[]) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add("opacity-100");
+          entry.target.classList.remove("opacity-0");
+        }
+      });
+    };
+
+    observer.current = new IntersectionObserver(lazyLoad, {
+      threshold: 0.2,
+    });
+
+    const images = document.querySelectorAll(".lazy-load");
+    images.forEach((img) => {
+      if (observer.current) observer.current.observe(img);
+    });
+
+    return () => observer.current?.disconnect();
+  }, [images, gifs]);
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 to-black text-gray-100 flex flex-col items-center justify-center px-6 py-12">
-      {/* Main Container */}
-      <div className="w-full max-w-4xl bg-black/70  rounded-3xl shadow-2xl p-10 transition transform hover:scale-105">
-        <h1 className="text-5xl font-extrabold mb-8 text-center bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-400">
-          Pixly - Image & GIF Matching
-        </h1>
-
-
-        <div className="flex gap-4 mb-8">
-          <input
-            type="text"
-            placeholder="Enter section (e.g., hero, footer)"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            className="w-full px-5 py-3 rounded-lg bg-gray-800 text-white border border-gray-700 focus:ring-2 focus:ring-blue-500 transition outline-none"
-          />
+    <div className="min-h-screen bg-gradient-to-b from-gray-900 to-black text-white p-8">
+      {/* Search Section */}
+      <div className="max-w-4xl mx-auto mb-12">
+        <h1 className="text-4xl font-bold mb-4 text-center">Find Matching Images & GIFs</h1>
+        <div className="flex items-center gap-4">
+          <div className="relative w-full">
+            <input
+              type="text"
+              placeholder="Enter section (e.g., hero, footer, faq)"
+              value={section}
+              onChange={(e) => setSection(e.target.value)}
+              className="w-full p-4 rounded-lg bg-gray-800 text-white shadow-md transition focus:ring-2 focus:ring-blue-500 focus:outline-none"
+            />
+            <FaSearch className="absolute right-4 top-4 text-gray-400" />
+          </div>
           <button
-            onClick={fetchPairs}
-            className="cursor-pointer bg-gradient-to-r from-blue-500 to-purple-500 text-white px-6 py-3 rounded-lg shadow-lg hover:scale-105 transition transform"
+            onClick={fetchImagesAndGifs}
+            className="bg-blue-600 hover:bg-blue-500 transition duration-300 px-6 py-4 rounded-lg shadow-lg flex items-center justify-center gap-2"
+            disabled={loading}
           >
-            Search
+            {loading ? <FaSpinner className="animate-spin" /> : "Search"}
           </button>
         </div>
+      </div>
 
-        {loading && (
-          <div className="flex justify-center py-6">
-            <Loader />
-          </div>
-        )}
+      {/* Error Handling */}
+      {error && (
+        <div className="bg-red-500 text-white p-4 rounded-lg shadow-md mb-8 max-w-2xl mx-auto">
+          {error}
+        </div>
+      )}
 
-      
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          {pairs.map((pair, index) => (
+      {/* Loading Spinner */}
+      {loading ? (
+        <div className="flex justify-center items-center min-h-[300px]">
+          <FaSpinner className="text-5xl text-blue-500 animate-spin" />
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {images.map((url, index) => (
             <div
-              key={index}
-              className="bg-gray-800 rounded-2xl shadow-lg hover:shadow-xl transition transform hover:scale-105 overflow-hidden"
+              key={`img-${index}`}
+              className="lazy-load opacity-0 transition-opacity duration-700 transform hover:scale-105 hover:shadow-xl rounded-lg overflow-hidden bg-gray-800"
             >
-              <PairCard image={pair.image} gif={pair.gif} />
+              <PairCard imgSrc={url} gifSrc={gifs[index % gifs.length]} />
             </div>
           ))}
         </div>
-
-        
-        {!loading && pairs.length === 0 && (
-          <p className="text-center text-gray-400 mt-8">
-            No matching pairs found. Try another keyword.
-          </p>
-        )}
-      </div>
+      )}
     </div>
   );
-}
+};
+
+export default Home;
+
+
+
