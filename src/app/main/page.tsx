@@ -73,7 +73,7 @@ const Home = () => {
           <div className="relative w-full">
             <input
               type="text"
-              placeholder="Enter section (e.g., hero, footer, faq)"
+              placeholder="Enter here(e.g,hero,footer,faq)"
               value={section}
               onChange={(e) => setSection(e.target.value)}
               className="w-full p-4 rounded-lg bg-gray-800 text-white shadow-md transition focus:ring-2 focus:ring-blue-500 focus:outline-none"
