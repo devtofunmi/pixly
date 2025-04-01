@@ -9,9 +9,10 @@ const Home = () => {
   const [gifs, setGifs] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [page, setPage] = useState(1); // Added page state
   const observer = useRef<IntersectionObserver | null>(null);
 
-  const fetchImagesAndGifs = async () => {
+  const fetchImagesAndGifs = async (newPage = 1) => {
     if (!section.trim()) return;
 
     setLoading(true);
@@ -19,8 +20,8 @@ const Home = () => {
 
     try {
       const [unsplashRes, giphyRes] = await Promise.all([
-        fetch(`https://api.unsplash.com/search/photos?query=${section}&per_page=6&client_id=${process.env.NEXT_PUBLIC_UNSPLASH_ACCESS_KEY}`),
-        fetch(`https://api.giphy.com/v1/gifs/search?api_key=${process.env.NEXT_PUBLIC_GIPHY_API_KEY}&q=${section}&limit=6`)
+        fetch(`https://api.unsplash.com/search/photos?query=${section}&per_page=6&page=${newPage}&client_id=${process.env.NEXT_PUBLIC_UNSPLASH_ACCESS_KEY}`),
+        fetch(`https://api.giphy.com/v1/gifs/search?api_key=${process.env.NEXT_PUBLIC_GIPHY_API_KEY}&q=${section}&limit=6&offset=${(newPage - 1) * 6}`)
       ]);
 
       if (!unsplashRes.ok || !giphyRes.ok) {
@@ -33,8 +34,8 @@ const Home = () => {
       const imageUrls = unsplashData.results.map((img: any) => img.urls.regular);
       const gifUrls = giphyData.data.map((gif: any) => gif.images.original.url);
 
-      setImages(imageUrls);
-      setGifs(gifUrls);
+      setImages((prev) => (newPage === 1 ? imageUrls : [...prev, ...imageUrls]));
+      setGifs((prev) => (newPage === 1 ? gifUrls : [...prev, ...gifUrls]));
     } catch (error: any) {
       setError(error.message);
     } finally {
@@ -64,6 +65,12 @@ const Home = () => {
     return () => observer.current?.disconnect();
   }, [images, gifs]);
 
+  const loadMore = () => {
+    const nextPage = page + 1;
+    setPage(nextPage);
+    fetchImagesAndGifs(nextPage);
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-900 to-black text-white p-8">
       {/* Search Section */}
@@ -73,7 +80,6 @@ const Home = () => {
           <div className="relative w-full">
             <input
               type="text"
-              // placeholder="Enter here(e.g,hero,footer,faq)"
               value={section}
               onChange={(e) => setSection(e.target.value)}
               className="w-full p-4 rounded-lg bg-gray-800 text-white shadow-md transition focus:ring-2 focus:ring-blue-500 focus:outline-none"
@@ -81,8 +87,11 @@ const Home = () => {
             <FaSearch className="absolute right-4 top-4 text-gray-400" />
           </div>
           <button
-            onClick={fetchImagesAndGifs}
-            className="bg-blue-600 hover:bg-blue-500 transition duration-300 px-6 py-4 rounded-lg shadow-lg flex items-center justify-center gap-2"
+            onClick={() => {
+              setPage(1);
+              fetchImagesAndGifs(1);
+            }}
+            className="bg-blue-600 cursor-pointer hover:bg-blue-500 transition duration-300 px-6 py-4 rounded-lg shadow-lg flex items-center justify-center gap-2"
             disabled={loading}
           >
             {loading ? <FaSpinner className="animate-spin" /> : "Search"}
@@ -98,20 +107,32 @@ const Home = () => {
       )}
 
       {/* Loading Spinner */}
-      {loading ? (
+      {loading && page === 1 ? (
         <div className="flex justify-center items-center min-h-[300px]">
           <FaSpinner className="text-5xl text-blue-500 animate-spin" />
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {images.map((url, index) => (
-            <div
-              key={`img-${index}`}
-              className="lazy-load opacity-0 transition-opacity duration-700 transform hover:scale-105 hover:shadow-xl rounded-lg overflow-hidden bg-gray-800"
-            >
-              <PairCard imgSrc={url} gifSrc={gifs[index % gifs.length]} />
+        <div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {images.map((url, index) => (
+              <div
+                key={`img-${index}`}
+                className="lazy-load opacity-0 transition-opacity duration-700 transform hover:scale-105 hover:shadow-xl rounded-lg overflow-hidden bg-gray-800"
+              >
+                <PairCard imgSrc={url} gifSrc={gifs[index % gifs.length]} />
+              </div>
+            ))}
+          </div>
+          {images.length > 0 && (
+            <div className="flex justify-center mt-8 ">
+              <button
+                onClick={loadMore}
+                className="bg-blue-600 cursor-pointer hover:bg-blue-500 transition duration-300 px-6 py-3 rounded-lg shadow-lg"
+              >
+                Load More
+              </button>
             </div>
-          ))}
+          )}
         </div>
       )}
     </div>
@@ -119,6 +140,7 @@ const Home = () => {
 };
 
 export default Home;
+
 
 
 
