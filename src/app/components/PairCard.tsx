@@ -35,7 +35,7 @@ const PairCard: React.FC<Props> = ({ imgSrc, gifSrc }) => {
               className="w-full h-full object-cover transition transform group-hover:scale-110"
             />
           ) : (
-            <p className="text-white">No GIF Available</p>
+            <h1 className="text-white">No GIF Available</h1>
           )}
         </div>
       </div>
