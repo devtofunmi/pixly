@@ -41,7 +41,7 @@ const PairCard: React.FC<Props> = ({ imgSrc, gifSrc }) => {
       </div>
 
       <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition flex items-center justify-center">
-        <p className="text-white text-lg font-semibold">Image & GIF Pair</p>
+        <p className="text-white text-lg font-semibold">Image & GIFF Pair</p>
       </div>
 
       <div className="absolute bottom-4 right-4 flex gap-3 opacity-0 group-hover:opacity-100 transition">
