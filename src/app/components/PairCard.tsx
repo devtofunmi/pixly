@@ -52,7 +52,7 @@ const PairCard: React.FC<Props> = ({ imgSrc, gifSrc }) => {
             rel="noopener noreferrer"
             className="bg-blue-500 text-white px-4 py-2 rounded-lg shadow-md hover:bg-blue-600 transition"
           >
-            Download Image
+            Download Imagee
           </a>
         )}
         {isValidGif && (
