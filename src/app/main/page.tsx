@@ -82,7 +82,7 @@ const Home = () => {
               type="text"
               value={section}
               onChange={(e) => setSection(e.target.value)}
-              className="w-full p-4 rounded-lg bg-gray-800 text-white shadow-md transition focus:ring-2 focus:ring-blue-500 focus:outline-none"
+              className="w-full p-3 rounded-lg bg-gray-800 text-white shadow-md transition focus:ring-2 focus:ring-blue-500 focus:outline-none"
             />
             <FaSearch className="absolute right-4 top-4 text-gray-500" />
           </div>
