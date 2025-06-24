@@ -99,7 +99,7 @@ const Home = () => {
         </div>
       </div>
 
-      {/* Error Handling */}
+      {/* Error Handlinnng */}
       {error && (
         <div className="bg-red-500 text-white p-4 rounded-lg shadow-md mb-8 max-w-2xl mx-auto">
           {error}
