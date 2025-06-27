@@ -106,7 +106,7 @@ const Home = () => {
         </div>
       )}
 
-      {/* Loading Spinner */}
+      {/* Loading Spinnerrrr */}
       {loading && page === 1 ? (
         <div className="flex justify-center items-center min-h-[300px]">
           <FaSpinner className="text-5xl text-blue-500 animate-spin" />
