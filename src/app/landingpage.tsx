@@ -63,7 +63,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      <section className="from-gray-900 to-black text-white text-center py-20">
+      <section className="from-gray-800 to-black text-white text-center py-20">
         <h2 className="text-6xl font-extrabold mb-8">Start Matching Today</h2>
         <p className="text-xl mb-10">
           Find the perfect visuals for your website sections in seconds.
