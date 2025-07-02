@@ -33,7 +33,7 @@ export async function GET(req: Request) {
     const unsplashData = await unsplashRes.json();
     const giphyData = await giphyRes.json();
 
-    // ✅ Extract image and GIF URLs
+    // Extract image and GIF URLs
     const imageUrl = unsplashData?.results?.[0]?.urls?.regular || null;
     const gifUrl = giphyData?.data?.[0]?.images?.original?.url || null;
 
