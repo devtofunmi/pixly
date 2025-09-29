@@ -6,7 +6,7 @@ export default function LandingPage() {
       <header className="min-h-[100vh] flex flex-col justify-center items-center text-center overflow-hidden">
        
         <div className="">
-          <h1 className="text-8xl font-extrabold mb-6 tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-400">
+          <h1 className="text-8xl font-extrabold mb-6 tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-blue-300 to-purple-400">
             P i x l y
           </h1>
           <p className="text-2xl mb-8 max-w-2xl mx-auto leading-relaxed px-5">
